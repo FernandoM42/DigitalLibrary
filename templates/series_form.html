@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if series_id %}Editar Serie{% else %}Crear Nueva Serie{% endif %}{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">{% if series_id %}Editar Serie: "{{ series.nombre_serie }}"{% else %}Crear Nueva Serie{% endif %}</h1>
+
+<div class="bg-white shadow-lg rounded-lg p-8 mb-8 border border-gray-200">
+    <form id="series-management-form">
+        <div id="step-1">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Paso 1: Detalles de la Serie y Selección de Libros</h2>
+            <div class="mb-4">
+                <label for="nombre_serie" class="block text-gray-700 text-sm font-bold mb-2">Nombre de la Serie:</label>
+                <input type="text" id="nombre_serie" name="nombre_serie" value="{{ series.nombre_serie if series else '' }}"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-6">
+                <label for="descripcion_serie" class="block text-gray-700 text-sm font-bold mb-2">Descripción de la Serie (Opcional):</label>
+                <textarea id="descripcion_serie" name="descripcion_serie" rows="3"
+                          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ series.descripcion_serie if series else '' }}</textarea>
+            </div>
+
+            <hr class="my-6 border-gray-300">
+
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Seleccionar Libros para esta Serie:</h3>
+            <div class="mb-4 flex items-center space-x-2">
+                <input type="text" id="book-search-input" placeholder="Buscar libro por título o autor..."
+                       class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="button" id="clear-book-search" class="bg-gray-300 text-gray-800 px-3 py-2 rounded-md hover:bg-gray-400">Limpiar</button>
+            </div>
+            
+            <div class="mb-4 max-h-80 overflow-y-auto border border-gray-300 rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título (Español / Original)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Autor(es)</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Año</th>
+                        </tr>
+                    </thead>
+                    <tbody id="books-selection-table-body" class="bg-white divide-y divide-gray-200">
+                        {# Los libros se cargarán y gestionarán con JavaScript #}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="flex justify-end space-x-4 mt-6">
+                <a href="{{ url_for('list_series') }}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400">Cancelar</a>
+                <button type="button" id="next-step-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Siguiente</button>
+            </div>
+        </div>
+
+        <div id="step-2" class="hidden">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Paso 2: Ajustar Orden de Libros en la Serie</h2>
+            <div id="selected-books-order-list" class="mb-4 max-h-96 overflow-y-auto border border-gray-300 rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16"></th> {# Handle de arrastre #}
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Orden</th> {# NUEVA COLUMNA DE ORDEN #}
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                        </tr>
+                    </thead>
+                    <tbody id="books-order-table-body" class="bg-white divide-y divide-gray-200">
+                        {# Las filas de libros seleccionados se generarán y ordenarán con JavaScript #}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between space-x-4 mt-6">
+                <button type="button" id="prev-step-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400">Anterior</button>
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">Guardar Serie</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{# Inyectar datos iniciales para JavaScript en modo edición #}
+{% if series_id and series %}
+<script>
+    const initialSeries = {{ series | tojson | safe }};
+    const initialBooksForSeries = {{ current_series_books | tojson | safe }}; // Diccionario {id_obra: orden}
+</script>
+{% endif %}
+<script>
+    // Pasar todos los libros para la búsqueda en JS
+    const allBooksData = {{ all_books | tojson | safe }};
+</script>
+
+{# Agrega la librería SortableJS aquí (Importante que se cargue antes de series_management.js) #}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+{# Tu script principal de gestión de series #}
+<script src="{{ url_for('static', filename='js/series_management.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if item_id %}Editar {{ config.singular_name }}{% else %}Crear Nuevo {{ config.singular_name }}{% endif %}{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">
+    {% if item_id %}Editar {{ config.singular_name }}: "{{ item_data.get(config.display_name_sql.split(' ')[0], '') }}"{% else %}Crear Nuevo {{ config.singular_name }}{% endif %}
+</h1>
+
+<div class="bg-white shadow-lg rounded-lg p-8 mb-8 border border-gray-200">
+    <form id="master-data-form">
+        {# Campo oculto para saber si es edición y qué ID estamos editando #}
+        {% if item_id %}
+            <input type="hidden" name="item_id" value="{{ item_id }}">
+        {% endif %}
+        {# Campo oculto para el tipo de dato maestro (autores, generos, etc.) #}
+        <input type="hidden" name="data_type" value="{{ data_type }}">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {% for field in form_fields %}
+            <div>
+                <label for="{{ field.name }}" class="block text-gray-700 text-sm font-bold mb-2">
+                    {{ field.label }}:{% if field.required %}<span class="text-red-500">*</span>{% endif %}
+                </label>
+                {% if field.type == 'textarea' %}
+                    <textarea id="{{ field.name }}" name="{{ field.name }}" rows="3"
+                              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                              {% if field.required %}required{% endif %}>{{ item_data.get(field.name, '') }}</textarea>
+                {% else %}
+                    <input type="{{ field.type }}" id="{{ field.name }}" name="{{ field.name }}"
+                           value="{{ item_data.get(field.name, '') }}"
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                           {% if field.required %}required{% endif %}>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex items-center justify-between mt-6">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                {% if item_id %}Actualizar {{ config.singular_name }}{% else %}Crear {{ config.singular_name }}{% endif %}
+            </button>
+            <a href="{{ url_for('list_master_data', data_type=data_type) }}" class="inline-block align-baseline font-bold text-sm text-gray-600 hover:text-gray-800">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+{# Inyectar datos iniciales para JavaScript #}
+{% if item_id %}
+<script>
+    const initialItemData = {{ item_data | tojson | safe }};
+    const isEditing = true;
+{% else %}
+<script>
+    const initialItemData = {};
+    const isEditing = false;
+{% endif %}
+    const currentDataType = "{{ data_type }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/master_data_crud.js') }}"></script>
+{% endblock %}

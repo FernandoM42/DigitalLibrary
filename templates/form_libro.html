@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if id_obra %}Editar Libro{% else %}Registrar Libro{% endif %}{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">{% if id_obra %}Editar Libro: {{ obra.titulo_espanol }}{% else %}Registrar Nuevo Libro{% endif %}</h1>
+
+<form method="POST" class="bg-white shadow-lg rounded-lg p-8 mb-8 border border-gray-200" enctype="multipart/form-data">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            <label for="titulo_original" class="block text-gray-700 text-sm font-bold mb-2">Título Original:</label>
+            <input type="text" id="titulo_original" name="titulo_original" value="{{ obra.titulo_original if obra else '' }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+        </div>
+        <div>
+            <label for="titulo_espanol" class="block text-gray-700 text-sm font-bold mb-2">Título en Español:</label>
+            <input type="text" id="titulo_espanol" name="titulo_espanol" value="{{ obra.titulo_espanol if obra else '' }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+        </div>
+        <div>
+            <label for="anio_publicacion" class="block text-gray-700 text-sm font-bold mb-2">Año de Publicación:</label>
+            <input type="number" id="anio_publicacion" name="anio_publicacion" value="{{ obra.anio_publicacion if obra else '' }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+        </div>
+
+        <div>
+            <label for="id_tipo_obra" class="block text-gray-700 text-sm font-bold mb-2">Tipo de Obra:</label>
+            <select id="id_tipo_obra" name="id_tipo_obra" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <option value="">Seleccione...</option>
+                {% for tipo in tipos_obra_list %}
+                    <option value="{{ tipo.id_tipo_obra }}" {% if obra and obra.id_tipo_obra == tipo.id_tipo_obra %}selected{% endif %}>{{ tipo.tipo }}</option>
+                {% endfor %}
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Selecciona el tipo de libro (Obligatorio).</p>
+        </div>
+        <div>
+            <label for="numero_paginas" class="block text-gray-700 text-sm font-bold mb-2">Número de Páginas (Opcional):</label>
+            <input type="number" id="numero_paginas" name="numero_paginas" value="{{ obra.numero_paginas if obra else '' }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+
+        {# Editorial como campo de texto con autocompletado #}
+        <div>
+            <label for="editorial-input" class="block text-gray-700 text-sm font-bold mb-2">Editorial:</label>
+            <div class="relative">
+                <input type="text" id="editorial-input" 
+                       value="{{ obra.nombre_editorial | default('') }}" {# AQUI ES LA CLAVE: Usar default('') para manejar None/empty #}
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                       placeholder="Escribe el nombre de la editorial..." required>
+                <div id="editorial-suggestions" class="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 w-full max-h-48 overflow-y-auto hidden"></div>
+            </div>
+            {# Este input oculto almacenará el ID de la editorial seleccionada/existente #}
+            <input type="hidden" name="id_editorial_selected" id="id-editorial-selected" 
+                   value="{{ obra.id_editorial if obra and obra.id_editorial else '' }}"> 
+            {# Este input oculto enviará el nombre de la editorial, útil para el backend si es una nueva #}
+            <input type="hidden" name="nombre_editorial_input" id="nombre-editorial-input-hidden"> 
+            <p class="text-xs text-gray-500 mt-1">Escribe o selecciona una editorial (Obligatorio).</p>
+        </div>
+
+        <div>
+            <label for="isbn" class="block text-gray-700 text-sm font-bold mb-2">ISBN:</label>
+            <input type="text" id="isbn" name="isbn" value="{{ obra.isbn if obra else '' }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+        </div>
+        <div class="mb-4">
+            <label for="adquirido" class="block text-gray-700 text-sm font-bold mb-2">Estado de Adquisición:</label>
+            <select id="adquirido" name="adquirido" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <option value="1" {% if obra.estado_adquisicion_value == 1 %}selected{% endif %}>Adquirido</option>
+                <option value="0" {% if obra.estado_adquisicion_value == 0 %}selected{% endif %}>No Adquirido</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="id_tipo_encuadernacion" class="block text-gray-700 text-sm font-bold mb-2">Tipo de Encuadernación:</label>
+            <select id="id_tipo_encuadernacion" name="id_tipo_encuadernacion" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <option value="">Seleccione...</option>
+                {% for encuadernacion in tipos_encuadernacion_list %}
+                    <option value="{{ encuadernacion.id_tipo_encuadernacion }}" {% if obra and obra.id_tipo_encuadernacion == encuadernacion.id_tipo_encuadernacion %}selected{% endif %}>{{ encuadernacion.nombre_encuadernacion }}</option>
+                {% endfor %}
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Selecciona el tipo de encuadernación (Obligatorio).</p>
+        </div>
+    </div>
+
+    <div class="mb-6">
+        <label for="sinopsis" class="block text-gray-700 text-sm font-bold mb-2">Sinopsis (Opcional):</label>
+        <textarea id="sinopsis" name="sinopsis" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ obra.sinopsis if obra else '' }}</textarea>
+    </div>
+
+    <hr class="my-6 border-gray-300">
+
+    <div class="mb-6">
+        <label for="author-input" class="block text-gray-700 text-sm font-bold mb-2">Autores:</label>
+        <div class="relative">
+            <input type="text" id="author-input" placeholder="Escribe el nombre del autor..." class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <div id="author-suggestions" class="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 w-full max-h-48 overflow-y-auto hidden">
+            </div>
+        </div>
+        <div id="selected-authors" class="mt-2 flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[40px]">
+        </div>
+        <input type="hidden" name="autores_selected_json" id="autores-selected-json">
+    </div>
+
+    <div class="mb-6">
+        <label for="genre-input" class="block text-gray-700 text-sm font-bold mb-2">Géneros:</label>
+        <div class="relative">
+            <input type="text" id="genre-input" placeholder="Escribe el nombre del género..." class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <div id="genre-suggestions" class="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 w-full max-h-48 overflow-y-auto hidden"></div>
+        </div>
+        <div id="selected-genres" class="mt-2 flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[40px]">
+        </div>
+        <input type="hidden" name="generos_selected_json" id="generos-selected-json">
+    </div>
+
+    <hr class="my-6 border-gray-300">
+
+    <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-bold mb-2">Imágenes:</label>
+        <div id="image-upload-area" class="border border-gray-300 p-4 rounded mb-4">
+            <div id="external-image-inputs">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Añadir por URL externa:</label>
+                <div class="flex items-center space-x-2 mb-2">
+                    <input type="url" class="external-image-url shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline flex-grow" placeholder="URL de la imagen (ej: http://ejemplo.com/imagen.jpg)">
+                    <input type="text" class="external-image-desc shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-1/3" placeholder="Descripción">
+                    <button type="button" class="add-external-image-btn bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">+</button>
+                </div>
+            </div>
+            <div id="external-image-previews" class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+            </div>
+        </div>
+        <input type="hidden" name="imagenes_externas_json" id="imagenes-externas-json">
+    </div>
+
+    <div class="flex items-center justify-between">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            {% if id_obra %}Actualizar Libro{% else %}Registrar Libro{% endif %}
+        </button>
+        <a href="{{ url_for('index') }}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+{# Inyectar datos iniciales para JavaScript en modo edición #}
+{% if id_obra and obra %}
+<script>
+    // Hacer las variables globales asignándolas a `window.`
+    window.initialAuthors = {{ obra.autores_data | tojson | safe }};
+    window.initialGenres = {{ obra.generos_data | tojson | safe }};
+    window.initialImages = {{ obra.imagenes_data | tojson | safe }};
+    window.initialEditorial = {
+        id_editorial: {{ obra.id_editorial if obra.id_editorial else 'null' }},
+        // ¡CAMBIO CLAVE AQUÍ! Usamos tojson | safe para asegurar un escape correcto.
+        nombre_editorial: {{ obra.nombre_editorial | tojson | safe }} 
+    };
+
+    {# --- DEPURACIÓN: Variables JS inyectadas por Jinja --- #}
+    console.log("\n--- DEBUG JS (form_libro HTML): Initial data from Jinja ---");
+    console.log("initialAuthors:", window.initialAuthors, "Type:", typeof window.initialAuthors, "Length:", window.initialAuthors ? window.initialAuthors.length : 'N/A');
+    console.log("initialGenres:", window.initialGenres, "Type:", typeof window.initialGenres, "Length:", initialGenres ? initialGenres.length : 'N/A');
+    console.log("initialImages:", window.initialImages, "Type:", typeof window.initialImages, "Length:", initialImages ? initialImages.length : 'N/A');
+    console.log("initialEditorial:", window.initialEditorial, "Type:", typeof window.initialEditorial);
+    console.log("------------------------------------------------------------\n");
+</script>
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/form_handling.js') }}"></script>
+{% endblock %}

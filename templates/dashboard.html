@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard de Estadísticas{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard de Estadísticas</h1>
+
+{# Verifica si hay libros para mostrar estadísticas, de lo contrario, muestra un mensaje #}
+{% if not stats.total_libros or stats.total_libros == 0 %}
+    <p class="text-gray-600 text-center text-lg mt-10">No hay libros registrados para generar estadísticas.</p>
+{% else %}
+    {# Sección de Resumen General #}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Resumen General</h2>
+            <p class="text-gray-700 mb-2"><span class="font-semibold">Total de Libros:</span> {{ stats.total_libros }}</p>
+            <p class="text-gray-700 mb-2"><span class="font-semibold">Total de Autores Únicos:</span> {{ stats.total_autores }}</p>
+            <p class="text-gray-700 mb-2"><span class="font-semibold">Total de Géneros Únicos:</span> {{ stats.total_generos }}</p>
+            <p class="text-gray-700 mb-2"><span class="font-semibold">Total de Editoriales Únicas:</span> {{ stats.total_editoriales }}</p>
+            <p class="text-gray-700 mb-2"><span class="font-semibold">Total de Series Únicas:</span> {{ stats.total_series }}</p>
+            <p class="text-gray-700 mb-2"><span class="font-semibold">Puntuación Promedio:</span> {{ stats.promedio_puntuacion }}/10</p>
+        </div>
+
+        {# Gráfico: Estado de Adquisición #}
+        <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Estado de Adquisición</h2>
+            <div class="relative w-48 h-48">
+                <canvas id="acquiredChart"></canvas>
+            </div>
+            <div class="text-sm text-gray-600 mt-4">
+                <p><span class="font-semibold">Adquiridos:</span> {{ stats.libros_adquiridos }}</p>
+                <p><span class="font-semibold">No Adquiridos:</span> {{ stats.libros_no_adquiridos }}</p>
+            </div>
+        </div>
+
+        {# Gráfico: Estado de Lectura #}
+        <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Estado de Lectura</h2>
+            <div class="relative w-48 h-48">
+                <canvas id="readStatusChart"></canvas>
+            </div>
+            <div class="text-sm text-gray-600 mt-4">
+                <p><span class="font-semibold">Leídos:</span> {{ stats.libros_leidos }}</p>
+                <p><span class="font-semibold">No Leídos:</span> {{ stats.libros_no_leidos }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {# Gráfico: Libros por Género #}
+        <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Libros por Género</h2>
+            <div class="relative w-64 h-64">
+                <canvas id="genreChart"></canvas>
+            </div>
+            <div class="text-sm text-gray-600 mt-4 max-h-32 overflow-y-auto w-full text-center">
+                {% for genre in stats.libros_por_genero %}
+                    <p>{{ genre.nombre_genero }}: {{ genre.count }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Gráfico: Libros por Tipo de Obra #}
+        <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Libros por Tipo de Obra</h2>
+            <div class="relative w-64 h-64">
+                <canvas id="workTypeChart"></canvas>
+            </div>
+            <div class="text-sm text-gray-600 mt-4 max-h-32 overflow-y-auto w-full text-center">
+                {% for type_obra in stats.libros_por_tipo_obra %}
+                    <p>{{ type_obra.tipo }}: {{ type_obra.count }}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Gráfico: Libros por Tipo de Encuadernación #}
+        <div class="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center col-span-full lg:col-span-1">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Libros por Tipo de Encuadernación</h2>
+            <div class="relative w-64 h-64">
+                <canvas id="bindingTypeChart"></canvas>
+            </div>
+            <div class="text-sm text-gray-600 mt-4 max-h-32 overflow-y-auto w-full text-center">
+                {% for binding_type in stats.libros_por_encuadernacion %}
+                    <p>{{ binding_type.nombre_encuadernacion }}: {{ binding_type.count }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {# Listas de Top (Autores, Editoriales, Libros Valorados) #}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Top 5 Autores</h2>
+            <ul class="list-disc list-inside text-gray-700">
+                {% for author in stats.top_5_autores %}
+                    <li>
+                        {# Nuevo botón clickeable para autores #}
+                        <button type="button" class="text-blue-600 hover:underline cursor-pointer author-detail-btn"
+                                data-filter-type="author" 
+                                data-filter-value="{{ author.author_name }}">
+                            {{ author.author_name }}
+                        </button>: {{ author.count }} libros
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Top 5 Editoriales</h2>
+            <ul class="list-disc list-inside text-gray-700">
+                {% for editorial in stats.top_5_editoriales %}
+                    <li>
+                        {# Nuevo botón clickeable para editoriales #}
+                        <button type="button" class="text-blue-600 hover:underline cursor-pointer editorial-detail-btn"
+                                data-filter-type="editorial" 
+                                data-filter-value="{{ editorial.nombre_editorial }}">
+                            {{ editorial.nombre_editorial }}
+                        </button>: {{ editorial.count }} libros
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-lg p-6 col-span-full">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Top 3 Libros Mejor Valorados</h2>
+            <ul class="list-disc list-inside text-gray-700">
+                {% for book in stats.top_3_libros_valorados %}
+                    <li>"{{ book.titulo_espanol }}" ({{ book.puntuacion }}/10)</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}
+
+{# Script de Chart.js (librería) #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{# Pasa las estadísticas a una variable global JavaScript antes de cargar el script de manejo de gráficos #}
+<script>
+    const globalStats = {{ stats | tojson | safe }}; 
+</script>
+
+{# Script personalizado que inicializa los gráficos y la interactividad #}
+<script src="{{ url_for('static', filename='js/dashboard_charts_and_details.js') }}"></script>
+
+{# Modal para la lista de libros #}
+<div id="chart-book-list-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-xl max-h-screen-90 overflow-y-auto relative">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Libros para <span id="chart-book-list-filter-value" class="text-blue-600"></span></h2>
+        
+        {# CUERPO DEL MODAL CON SCROLL: max-h-96 para altura máxima, overflow-y-auto para el scroll #}
+        <div id="chart-book-list-modal-body" class="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto p-2">
+            </div>
+
+        <div class="flex justify-end mt-6">
+            <button type="button" id="chart-book-list-close-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400">Cerrar</button>
+        </div>
+        <button type="button" id="chart-book-list-modal-close-x" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold">&times;</button>
+    </div>
+</div>
+
+{% endblock %}

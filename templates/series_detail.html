@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalles de la Serie: {{ series.nombre_serie }}{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-lg rounded-lg p-8 mb-8 border border-gray-200">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Serie: "{{ series.nombre_serie }}"</h1>
+        <a href="{{ url_for('list_series') }}" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400">
+            ← Volver a Series
+        </a>
+    </div>
+
+    <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Descripción:</h2>
+        <p class="text-gray-700">{{ series.descripcion_serie if series.descripcion_serie else 'Sin descripción.' }}</p>
+    </div>
+
+    <hr class="my-6 border-gray-300">
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Libros en esta Serie:</h2>
+
+    {% if books %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for book in books %}
+        <div class="bg-gray-50 shadow-md rounded-lg overflow-hidden border border-gray-200 p-4 relative">
+            {# Líneas de depuración Jinja (mantener si es necesario) #}
+            {# <p style="background-color: yellow; color: black; padding: 2px;">DEBUG JINJA (SERIES_DETAIL HTML): book.id_obra = {{ book.id_obra }} (Tipo: {{ book.id_obra.__class__.__name__ }})</p> #}
+            {# <script>console.log("DEBUG JINJA (SERIES_DETAIL JS): book object:", {{ book | tojson | safe }});</script> #}
+            
+            {% if book.id_obra is not none %} {# Verificación de seguridad #}
+            <div class="flex items-start space-x-4">
+                {# Imagen del libro (si existe) #}
+                {% set first_image_url = '' %}
+                {% if book.imagenes_con_descripcion %}
+                    {% set images_list = book.imagenes_con_descripcion.split('; ') %}
+                    {% if images_list|length > 0 %}
+                        {% set first_image_data = images_list[0].split(' [') %}
+                        {% set first_image_url = first_image_data[0] %}
+                    {% endif %}
+                {% endif %}
+                
+                <div class="flex-shrink-0 w-24 h-32 overflow-hidden rounded-lg border border-gray-200">
+                    {% if first_image_url %}
+                        <img src="{{ first_image_url }}" alt="Portada" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 text-xs text-center">No Image</div>
+                    {% endif %}
+                </div>
+
+                <div class="flex-grow">
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">
+                        {{ book.orden_en_serie }}. {{ book.titulo_espanol }} 
+                        <span class="text-gray-500 text-sm">({{ book.titulo_original }})</span>
+                    </h3>
+                    <p class="text-gray-700 text-sm mb-1">Autor(es): {{ book.autores if book.autores else 'N/A' }}</p>
+                    <p class="text-gray-700 text-sm mb-2">Editorial: {{ book.editorial_nombre if book.editorial_nombre else 'N/A' }}</p>
+                    
+                    {% if book.ranking_personal_puntuacion %}
+                    <p class="text-gray-700 text-sm mb-2">
+                        Ranking: {{ book.ranking_personal_puntuacion }}/10
+                        {% if book.ranking_personal_comentarios %} - "{{ book.ranking_personal_comentarios | truncate(50, true) }}"{% endif %}
+                    </p>
+                    {% endif %}
+
+                    <div class="mt-3 flex space-x-2 text-sm">
+                        <a href="{{ url_for('form_libro', id_obra=book.id_obra) }}" class="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600">Editar Libro</a>
+                        <button type="button" class="open-rating-modal-btn bg-purple-600 text-white px-3 py-1 rounded-md hover:bg-purple-700"
+                                data-book-id="{{ book.id_obra }}" 
+                                data-book-title="{{ book.titulo_espanol }}"
+                                data-puntuacion="{{ book.ranking_personal_puntuacion if book.ranking_personal_puntuacion is not none else '' }}"
+                                data-comentarios="{{ book.ranking_personal_comentarios if book.ranking_personal_comentarios is not none else '' }}"
+                                data-fecha-ranking="{{ book.ranking_personal_fecha if book.ranking_personal_fecha is not none else '' }}">
+                            Valorar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p style="color: red; font-weight: bold;">Error de datos: Libro sin ID en esta serie.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-600 text-center text-lg mt-4">Esta serie aún no tiene libros asignados.</p>
+    {% endif %}
+
+{% endblock %}

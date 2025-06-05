@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar {{ config.plural_name }}{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">Gestionar {{ config.plural_name }}</h1>
+
+<form action="{{ url_for('list_master_data', data_type=data_type) }}" method="GET" class="mb-8 p-4 bg-white shadow-md rounded-lg flex items-center space-x-4">
+    <input type="text" name="q" placeholder="Buscar por nombre..." value="{{ search_query if search_query else '' }}"
+           class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Buscar</button>
+    {% if search_query %}
+    <a href="{{ url_for('list_master_data', data_type=data_type) }}" class="text-gray-500 hover:text-gray-700">Limpiar</a>
+    {% endif %}
+</form>
+
+{% if config.create_url_suffix %}
+<div class="mb-6 flex justify-end">
+    <a href="{{ url_for('create_master_data', data_type=data_type) }}" class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition duration-300 text-lg font-semibold">
+        + Crear Nuevo {{ config.singular_name }}
+    </a>
+</div>
+{% endif %}
+
+{% if items_list %}
+<div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for item in items_list %}
+            <tr data-item-id="{{ item[config.id_col] }}">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item[config.id_col] }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ item.display_name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex space-x-2">
+                        {% if config.edit_url_suffix %}
+                        <a href="{{ url_for('edit_master_data', data_type=data_type, item_id=item[config.id_col]) }}" 
+                           class="bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 text-center transition duration-300">Editar</a>
+                        {% endif %}
+                        {% if config.delete_url_suffix %}
+                        <button type="button" 
+                                data-item-id="{{ item[config.id_col] }}" 
+                                data-item-name="{{ item.display_name }}" 
+                                data-type="{{ data_type }}"
+                                data-delete-url="{{ url_for('delete_master_data', data_type=data_type, item_id=item[config.id_col]) }}"
+                                class="delete-master-btn bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 text-center transition duration-300">
+                            Eliminar
+                        </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-gray-600 text-center text-lg">No hay {{ config.plural_name }} registrados aún.</p>
+{% if config.create_url_suffix %}
+<p class="text-gray-600 text-center text-lg mt-2">¡<a href="{{ url_for('create_master_data', data_type=data_type) }}" class="text-blue-500 hover:underline">Crea el primero</a>!</p>
+{% endif %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='js/master_data_crud.js') }}"></script>
+{% endblock %}

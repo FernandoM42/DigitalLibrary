@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Administración de Datos Maestros{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">Administración de Datos Maestros</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Gestionar Autores</h2>
+        <p class="text-gray-700 mb-4">Añade, edita o elimina autores. La eliminación de un autor también eliminará sus vínculos con las libros.</p>
+        <a href="{{ url_for('list_master_data', data_type='autores') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+            Ir a Autores
+        </a>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Gestionar Géneros</h2>
+        <p class="text-gray-700 mb-4">Añade, edita o elimina géneros. No se pueden eliminar géneros que estén siendo utilizados por libros.</p>
+        <a href="{{ url_for('list_master_data', data_type='generos') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+            Ir a Géneros
+        </a>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Gestionar Tipos de Obra</h2>
+        <p class="text-gray-700 mb-4">Añade, edita o elimina tipos de obra. No se pueden eliminar tipos de obra que estén siendo utilizados por libros.</p>
+        <a href="{{ url_for('list_master_data', data_type='tipos_obra') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+            Ir a Tipos de Obra
+        </a>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Gestionar Tipos de Encuadernación</h2>
+        <p class="text-gray-700 mb-4">Añade, edita o elimina tipos de encuadernación. No se pueden eliminar tipos que estén siendo utilizados por libros.</p>
+        <a href="{{ url_for('list_master_data', data_type='tipos_encuadernacion') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+            Ir a Tipos de Encuadernación
+        </a>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Listar Editoriales</h2>
+        <p class="text-gray-700 mb-4">Añade, edita o elimina las editoriales. No se pueden eliminar editoriales que estén siendo utilizados por libros.</p>
+        <a href="{{ url_for('list_master_data', data_type='editoriales') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+            Ir a Editoriales
+        </a>
+    </div>
+</div>
+{% endblock %}

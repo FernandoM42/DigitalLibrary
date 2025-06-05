@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Eliminación{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-lg rounded-lg p-8 mb-8 border border-gray-200 max-w-md mx-auto text-center">
+    <h1 class="text-2xl font-bold text-red-700 mb-4">Confirmar Eliminación</h1>
+    <p class="text-gray-700 mb-6">¿Estás seguro de que quieres eliminar la obra "{{ obra.titulo_espanol }}"?</p>
+
+    <form id="delete-form">
+        <input type="hidden" name="id_obra" value="{{ id_obra }}">
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-4">
+            Sí, Eliminar
+        </button>
+        <a href="{{ url_for('index') }}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+            No, Cancelar
+        </a>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const deleteForm = document.getElementById('delete-form');
+        
+        deleteForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Previene el envío tradicional del formulario
+
+            const idObra = deleteForm.querySelector('input[name="id_obra"]').value;
+            const deleteUrl = "{{ url_for('eliminar_libro', id_obra=id_obra) }}"; // Usamos la URL generada por Flask
+
+            fetch(deleteUrl, {
+                method: 'POST', // El método es POST para la eliminación
+                // No necesitamos body si solo enviamos el ID en la URL y no hay otros campos
+                // Si la ruta eliminar_libro espera un FormData, puedes construirlo así:
+                // body: new FormData(deleteForm)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return response.json().catch(() => response.text()).then(errorText => {
+                        throw new Error(errorText);
+                    });
+                }
+            })
+            .then(data => {
+                if (data.message) {
+                    // Guarda el mensaje y la categoría en localStorage
+                    localStorage.setItem('flashMessage', data.message);
+                    localStorage.setItem('flashCategory', data.category || 'info');
+                }
+
+                if (data.redirect) {
+                    // Redirige a la página principal después de la eliminación
+                    window.location.href = data.redirect;
+                } else {
+                    // Si no hay redirección, pero hay un mensaje (ej. para errores)
+                    alert('Operación completada con mensaje: ' + (data.message || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error al eliminar la obra:', error);
+                alert('Ocurrió un error al eliminar la obra: ' + (error.message || 'Error desconocido'));
+            });
+        });
+    });
+</script>
+{% endblock %}
