@@ -107,5 +107,3 @@ def migrate_editorial_data():
 
 if __name__ == '__main__':
     migrate_editorial_data()
-
-# La función auxiliar TRIM(s) ya no es necesaria y puede ser eliminada.
