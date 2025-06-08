@@ -34,15 +34,16 @@ def get_db_connection():
         return None
 
 @app.route('/')
+@app.route('/index')
 def index():
     conn = get_db_connection()
     if conn is None:
         flash("Error al conectar con la base de datos.", "danger")
         return render_template('index.html', obras=[], search_query='', tipos_obra_list=[], tipos_encuadernacion_list=[])
 
-    cursor = conn.cursor(dictionary=True) # Cursor de diccionario
+    cursor = conn.cursor(dictionary=True)
     try:
-        # --- Obtener datos para los filtros dropdowns ---
+        # --- Obtener datos para los filtros dropdowns (sin cambios) ---
         cursor.execute("SELECT id_tipo_obra, tipo FROM tipos_obra ORDER BY tipo")
         tipos_obra_list = cursor.fetchall()
 
@@ -63,6 +64,8 @@ def index():
         max_ranking = request.args.get('max_ranking', '').strip()
         author_ids_filter = request.args.get('author_ids_filter', '').strip()
         genre_ids_filter = request.args.get('genre_ids_filter', '').strip()
+        # *** NUEVO: Obtener el parámetro de ordenación ***
+        sort_by = request.args.get('sort_by', '').strip() 
         # --------------------------------------------------------
 
         base_query = "SELECT * FROM vista_obras_detalles"
@@ -154,25 +157,47 @@ def index():
         full_query = base_query
         if where_clauses:
             full_query += " WHERE " + " AND ".join(where_clauses)
-        full_query += " ORDER BY titulo_espanol"
+        
+        # *** MODIFICACIÓN: Aplicar ordenación dinámica ***
+        order_by_clause = " ORDER BY titulo_espanol ASC" # Orden por defecto si no se especifica
 
-        # print(f"DEBUG SQL: Full Query: {full_query}")
-        # print(f"DEBUG SQL: Query Params: {query_params}")
+        if sort_by == 'title_asc':
+            order_by_clause = " ORDER BY titulo_espanol ASC"
+        elif sort_by == 'title_desc':
+            order_by_clause = " ORDER BY titulo_espanol DESC"
+        elif sort_by == 'author_asc':
+            order_by_clause = " ORDER BY autores ASC"
+        elif sort_by == 'author_desc':
+            order_by_clause = " ORDER BY autores DESC"
+        elif sort_by == 'year_desc':
+            order_by_clause = " ORDER BY anio_publicacion DESC"
+        elif sort_by == 'year_asc':
+            order_by_clause = " ORDER BY anio_publicacion ASC"
+        elif sort_by == 'rating_desc':
+            # Para MySQL, NULLs LAST es implícito para DESC. Los nulos van al final.
+            order_by_clause = " ORDER BY ranking_personal_puntuacion DESC, titulo_espanol ASC"
+        elif sort_by == 'rating_asc':
+            # Para MySQL, NULLs FIRST es implícito para ASC. Los nulos van al principio.
+            order_by_clause = " ORDER BY ranking_personal_puntuacion ASC, titulo_espanol ASC"
+        elif sort_by == 'pages_asc':
+            order_by_clause = " ORDER BY numero_paginas ASC"
+        elif sort_by == 'pages_desc':
+            order_by_clause = " ORDER BY numero_paginas DESC"
+        # Puedes añadir más opciones si las definiste en el select
+
+        full_query += order_by_clause # Añadir la cláusula de ordenación dinámica
+        # *** FIN MODIFICACIÓN ***
+
+        print(f"DEBUG SQL: Full Query: {full_query}")
+        print(f"DEBUG SQL: Query Params: {query_params}")
 
         cursor.execute(full_query, query_params)
 
         obras = cursor.fetchall()
-        
-         # --- NUEVOS PRINTS DE DEPURACIÓN CRÍTICOS ---
-        # print("\n--- DEBUG FLASK: Obras RAW fetched from DB ---")
-        # for obra_raw in obras:
-        #     print(f"RAW DB Record: {obra_raw}")
-        # print("-------------------------------------------\n")
-        # --- FIN NUEVOS PRINTS ---
+        print(f"DEBUG FLASK INDEX: Obras fetched (raw): {obras}")
 
         processed_obras = []
         for obra_dict in obras:
-            # Asegurar que id_obra es un int nativo de Python, manejando errores de conversión o claves faltantes
             current_id_obra = None 
             if isinstance(obra_dict, dict) and 'id_obra' in obra_dict and obra_dict['id_obra'] is not None:
                 try:
@@ -182,17 +207,14 @@ def index():
             else:
                 current_id_obra = None 
             
-            # Asignar el id_obra procesado de vuelta al diccionario
             obra_dict['id_obra'] = current_id_obra 
 
-            # Incluir la obra en la lista final SOLO SI id_obra no es None
             if obra_dict['id_obra'] is not None:
                 processed_obras.append(obra_dict)
             else:
-                # Si una obra tiene id_obra = None después de procesar, la saltamos del renderizado
                 print(f"DEBUG FLASK INDEX: Saltando obra con id_obra faltante/inválido: {obra_dict}")
         
-        # print(f"DEBUG FLASK INDEX: Obras fetched (processed for id_obra and filtered): {processed_obras}") 
+        print(f"DEBUG FLASK INDEX: Obras fetched (processed for id_obra and filtered): {processed_obras}") 
         
         return render_template('index.html', obras=processed_obras, search_query=main_search_query, 
                                tipos_obra_list=tipos_obra_list, 
@@ -206,7 +228,8 @@ def index():
                                adquirido_filter=adquirido_filter,
                                min_ranking=min_ranking, max_ranking=max_ranking,
                                author_ids_filter=author_ids_filter,
-                               genre_ids_filter=genre_ids_filter
+                               genre_ids_filter=genre_ids_filter,
+                               sort_by=sort_by # *** Pasar el valor de sort_by a la plantilla ***
                                )
     finally:
         if cursor:

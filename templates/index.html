@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}Lista de Libros{% endblock %}
+{% block title %}Lista de Obras{% endblock %}
 
 {% block content %}
 <h1 class="text-3xl font-bold text-gray-800 mb-6">Mis Libros</h1>
-
-
 
 <form id="main-search-form" action="{{ url_for('index') }}" method="GET" class="mb-8 p-4 bg-white shadow-md rounded-lg flex items-center space-x-4">
     <input type="text" name="q" placeholder="Buscar por título, editorial, género, autor..." value="{{ search_query if search_query else '' }}"
@@ -19,6 +17,22 @@
     {% if search_query or request.args.get('filter_applied') %}
     <a href="{{ url_for('index') }}" class="text-gray-500 hover:text-gray-700">Limpiar Filtros</a>
     {% endif %}
+
+    {# *** NUEVO: Selector "Ordenar por..." *** #}
+    <label for="sort_by" class="ml-4 text-gray-700 text-sm font-bold">Ordenar por:</label>
+    <select id="sort_by" name="sort_by" class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="title_asc">Título (A-Z)</option>
+        <option value="title_desc">Título (Z-A)</option>
+        <option value="author_asc">Autor (A-Z)</option>
+        <option value="author_desc">Autor (Z-A)</option>
+        <option value="year_desc">Año (más nuevo)</option>
+        <option value="year_asc">Año (más antiguo)</option>
+        <option value="rating_desc">Puntuación (mejor)</option>
+        <option value="rating_asc">Puntuación (peor)</option>
+        <option value="pages_asc">Páginas (asc.)</option>
+        <option value="pages_desc">Páginas (desc.)</option>
+    </select>
+    {# ************************************** #}
 </form>
 
 {% if obras %}
@@ -26,10 +40,9 @@
     {% for obra in obras %}
     <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 group relative"
          data-images-raw="{{ obra.imagenes_con_descripcion if obra.imagenes_con_descripcion else '' }}"
-         data-obra-id="{{ obra.id_obra }}" data-obra-titulo="{{ obra.titulo_espanol }}"
-         data-obra-sinopsis="{{ obra.sinopsis if obra.sinopsis is not none else '' }}"> {# *** AÑADIR data-obra-sinopsis *** #}
+         data-obra-id="{{ obra.id_obra }}" data-obra-titulo="{{ obra.titulo_espanol }}">
         
-        <!-- {# Líneas de depuración en Jinja (puedes eliminarlas una vez funcione) #}
+        <!-- {# Líneas de depuración en Jinja (mantener o eliminar según necesites) #}
         <p style="background-color: red; color: white; padding: 5px;">
             DEBUG JINJA (HTML): obra.id_obra = {{ obra.id_obra }} (Tipo: {{ obra.id_obra.__class__.__name__ }})
         </p>
@@ -77,7 +90,7 @@
                 <span class="font-semibold">Tipo:</span> {{ obra.tipo_obra }}
             </p>
             <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Editorial:</span> {{ obra.editorial_nombre if obra.editorial_nombre else 'N/A' }}
+                <span class="font-semibold">Editorial:</span> {{ obra.editorial_name if obra.editorial_name else 'N/A' }}
             </p>
             <p class="text-gray-700 mb-2">
                 <span class="font-semibold">Páginas:</span> {{ obra.numero_paginas if obra.numero_paginas else 'N/A' }}
@@ -97,22 +110,9 @@
                 {% if obra.ranking_personal_comentarios %} - "{{ obra.ranking_personal_comentarios }}"{% endif %}
             </p>
             {% endif %}
-            
-            {# *** MODIFICACIÓN: Sinopsis truncada con "Ver más" *** #}
-            <p class="text-gray-800 text-sm mt-4 mb-4 line-clamp-3" id="sinopsis-{{ obra.id_obra }}">
-                <span class="font-semibold">Sinopsis:</span> 
-                {% set display_sinopsis = obra.sinopsis if obra.sinopsis is not none else 'Sin sinopsis disponible.' %}
-                {{ display_sinopsis | truncate(130, true) }} {# truncate se asume que funciona como filtro custom o está en Jinja2 #}
-                {% if display_sinopsis|length > 130 %} {# Mostrar "Ver más" solo si la sinopsis es realmente larga #}
-                    <span class="text-blue-600 hover:underline cursor-pointer ver-mas-btn" 
-                          data-obra-id="{{ obra.id_obra }}" 
-                          data-obra-title="{{ obra.titulo_espanol }}" 
-                          data-full-sinopsis="{{ obra.sinopsis if obra.sinopsis is not none else '' }}">
-                        Ver más
-                    </span>
-                {% endif %}
+            <p class="text-gray-800 text-sm mt-4 mb-4 line-clamp-3">
+                <span class="font-semibold">Sinopsis:</span> {{ obra.sinopsis | truncate(150, true) if obra.sinopsis else 'Sin sinopsis disponible.' }}
             </p>
-            {# *** FIN MODIFICACIÓN *** #}
 
             <div class="mt-4 flex space-x-2">
                 {% if obra.id_obra is not none %}
@@ -249,10 +249,10 @@
 
 {# Inyectar datos iniciales para JavaScript #}
 <script>
-    const allTiposObra = {{ tipos_obra_list | tojson | safe }};
-    const allTiposEncuadernacion = {{ tipos_encuadernacion_list | tojson | safe }};
-    // Esta variable global currentFilters será inicializada por index_filters.js
-    // con new URLSearchParams(window.location.search);
+    const allTiposObra = {{ tipos_obra_list | tojson | safe }};
+    const allTiposEncuadernacion = {{ tipos_encuadernacion_list | tojson | safe }};
+    // Esta variable global currentFilters será inicializada por index_filters.js
+    // con new URLSearchParams(window.location.search);
 </script>
 
 {% endblock %}

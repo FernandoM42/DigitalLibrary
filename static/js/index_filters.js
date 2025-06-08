@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const genreIdsFilterInput = document.getElementById('genre-ids-filter');
     let selectedGenresFilter = {}; // {id_genero: {id_genero, nombre_genero}}
 
+        const sortBySelect = document.getElementById('sort_by');
+
+
     // --- Datos iniciales / URLSearchParams (global en este contexto de script) ---
     const currentFilters = new URLSearchParams(window.location.search);
 
@@ -323,7 +326,35 @@ document.addEventListener('DOMContentLoaded', () => {
         // El resto de los campos de texto y select se envían automáticamente
     });
 
+    // *** NUEVA LÓGICA: Manejar el cambio en el selector de ordenar ***
+    sortBySelect.addEventListener('change', () => {
+        // Obtener todos los parámetros actuales de la URL
+        const params = new URLSearchParams(window.location.search);
+        
+        // Eliminar cualquier parámetro 'sort_by' existente
+        params.delete('sort_by');
+
+        // Añadir el nuevo parámetro 'sort_by' si se seleccionó una opción
+        if (sortBySelect.value) {
+            params.append('sort_by', sortBySelect.value);
+        }
+        
+        // Redirigir a la página con los nuevos filtros y ordenación
+        window.location.href = `/index?${params.toString()}`;
+    });
+    // ***************************************************************
+
     // --- Inicialización ---
     // Pre-llenar el formulario de filtros con los parámetros de la URL al cargar la página
     prefillFilterForm();
+
+    // *** NUEVA LÓGICA: Pre-seleccionar la opción de ordenar al cargar la página ***
+    const currentSortBy = currentFilters.get('sort_by');
+     const firstOption = sortBySelect.options[0];
+    
+    if (currentSortBy) {
+        sortBySelect.value = currentSortBy;
+    } else {
+        sortBySelect.value = firstOption.value; // Asegurarse de que la opción por defecto esté seleccionada
+    }
 });
