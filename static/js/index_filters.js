@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // *** NUEVA LÓGICA: Pre-seleccionar la opción de ordenar al cargar la página ***
     const currentSortBy = currentFilters.get('sort_by');
-     const firstOption = sortBySelect.options[0];
+    const firstOption = sortBySelect.options[0];
     
     if (currentSortBy) {
         sortBySelect.value = currentSortBy;
