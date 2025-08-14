@@ -1241,7 +1241,6 @@ def eliminar_libro(id_obra):
 
 # --- NUEVA RUTA: Página de listado de series ---
 @app.route("/series")
-@login_required
 def list_series():
     conn = get_db_connection()
     if conn is None:
@@ -2059,7 +2058,6 @@ def delete_rating(id_obra):
 
 # --- NUEVA RUTA: Ver detalles de una serie y sus libros ---
 @app.route("/series/<int:series_id>")
-@login_required
 def view_series_detail(series_id):
     conn = get_db_connection()
     if conn is None:
@@ -2443,7 +2441,6 @@ def get_books_by_filter():
 
 # --- NUEVA RUTA: Visualización del Ranking de Libros ---
 @app.route("/ranking")
-@login_required
 def ranking():
     conn = get_db_connection()
     if conn is None:
