@@ -1,48 +1,72 @@
-{% extends 'base.html' %}
-
-{% block title %}Lista de Obras{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Lista de Obras{% endblock %} {% block
+content %}
 <h1 class="text-3xl font-bold text-gray-800 mb-6">Mis Libros</h1>
 
-<form id="main-search-form" action="{{ url_for('index') }}" method="GET" class="mb-8 p-4 bg-white shadow-md rounded-lg flex items-center space-x-4">
-    <input type="text" name="q" placeholder="Buscar por título, editorial, género, autor..." value="{{ search_query if search_query else '' }}"
-           class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Buscar</button>
-    
-    <button type="button" id="open-filter-modal-btn" class="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition duration-300">
-        Filtrar por...
-    </button>
+<form
+  id="main-search-form"
+  action="{{ url_for('index') }}"
+  method="GET"
+  class="mb-8 p-4 bg-white shadow-md rounded-lg flex items-center space-x-4"
+>
+  <input
+    type="text"
+    name="q"
+    placeholder="Buscar por título, editorial, género, autor..."
+    value="{{ search_query if search_query else '' }}"
+    class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  <button
+    type="submit"
+    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300"
+  >
+    Buscar
+  </button>
 
-    {% if search_query or request.args.get('filter_applied') %}
-    <a href="{{ url_for('index') }}" class="text-gray-500 hover:text-gray-700">Limpiar Filtros</a>
-    {% endif %}
+  <button
+    type="button"
+    id="open-filter-modal-btn"
+    class="bg-gray-400 text-white px-4 py-2 rounded-md hover:bg-gray-500 transition duration-300"
+  >
+    Filtrar por...
+  </button>
 
-    {# *** NUEVO: Selector "Ordenar por..." *** #}
-    <label for="sort_by" class="ml-4 text-gray-700 text-sm font-bold">Ordenar por:</label>
-    <select id="sort_by" name="sort_by" class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="title_asc">Título (A-Z)</option>
-        <option value="title_desc">Título (Z-A)</option>
-        <option value="author_asc">Autor (A-Z)</option>
-        <option value="author_desc">Autor (Z-A)</option>
-        <option value="year_desc">Año (más nuevo)</option>
-        <option value="year_asc">Año (más antiguo)</option>
-        <option value="rating_desc">Puntuación (mejor)</option>
-        <option value="rating_asc">Puntuación (peor)</option>
-        <option value="pages_asc">Páginas (asc.)</option>
-        <option value="pages_desc">Páginas (desc.)</option>
-    </select>
-    {# ************************************** #}
+  {% if search_query or request.args.get('filter_applied') %}
+  <a href="{{ url_for('index') }}" class="text-gray-500 hover:text-gray-700"
+    >Limpiar Filtros</a
+  >
+  {% endif %} {# *** NUEVO: Selector "Ordenar por..." *** #}
+  <label for="sort_by" class="ml-4 text-gray-700 text-sm font-bold"
+    >Ordenar por:</label
+  >
+  <select
+    id="sort_by"
+    name="sort_by"
+    class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="title_asc">Título (A-Z)</option>
+    <option value="title_desc">Título (Z-A)</option>
+    <option value="author_asc">Autor (A-Z)</option>
+    <option value="author_desc">Autor (Z-A)</option>
+    <option value="year_desc">Año (más nuevo)</option>
+    <option value="year_asc">Año (más antiguo)</option>
+    <option value="rating_desc">Puntuación (mejor)</option>
+    <option value="rating_asc">Puntuación (peor)</option>
+    <option value="pages_asc">Páginas (asc.)</option>
+    <option value="pages_desc">Páginas (desc.)</option>
+  </select>
+  {# ************************************** #}
 </form>
 
 {% if obras %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for obra in obras %}
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 group relative"
-         data-images-raw="{{ obra.imagenes_con_descripcion if obra.imagenes_con_descripcion else '' }}"
-         data-obra-id="{{ obra.id_obra }}" data-obra-titulo="{{ obra.titulo_espanol }}">
-        
-        <!-- {# Líneas de depuración en Jinja (mantener o eliminar según necesites) #}
+  {% for obra in obras %}
+  <div
+    class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 group relative"
+    data-images-raw="{{ obra.imagenes_con_descripcion if obra.imagenes_con_descripcion else '' }}"
+    data-obra-id="{{ obra.id_obra }}"
+    data-obra-titulo="{{ obra.titulo_espanol }}"
+  >
+    <!-- {# Líneas de depuración en Jinja (mantener o eliminar según necesites) #}
         <p style="background-color: red; color: white; padding: 5px;">
             DEBUG JINJA (HTML): obra.id_obra = {{ obra.id_obra }} (Tipo: {{ obra.id_obra.__class__.__name__ }})
         </p>
@@ -56,192 +80,377 @@
         </script>
         {# ******************************************************************* #} -->
 
-        <div class="relative w-full h-64 bg-gray-200 flex items-center justify-center overflow-hidden">
-            <img src="" alt="Portada del libro"
-                 class="absolute inset-0 w-full h-full object-contain book-image"
-                 onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.png') }}';"
-                 style="display: none;">
+    <div
+      class="relative w-full h-64 bg-gray-200 flex items-center justify-center overflow-hidden"
+    >
+      <img
+        src=""
+        alt="Portada del libro"
+        class="absolute inset-0 w-full h-full object-contain book-image"
+        onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.png') }}';"
+        style="display: none"
+      />
 
-            <div class="absolute inset-0 w-full h-full flex items-center justify-center text-gray-500 bg-gray-300 no-image-placeholder {% if obra.imagenes_con_descripcion %}hidden{% endif %}">
-                <span class="text-xl">No Image Available</span>
-            </div>
+      <div
+        class="absolute inset-0 w-full h-full flex items-center justify-center text-gray-500 bg-gray-300 no-image-placeholder {% if obra.imagenes_con_descripcion %}hidden{% endif %}"
+      >
+        <span class="text-xl">No Image Available</span>
+      </div>
 
-            <button class="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 prev-image-btn {% if not obra.imagenes_con_descripcion %}hidden{% endif %}">
-                &lt;
-            </button>
-            <button class="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 next-image-btn {% if not obra.imagenes_con_descripcion %}hidden{% endif %}">
-                &gt;
-            </button>
+      <button
+        class="absolute left-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 prev-image-btn {% if not obra.imagenes_con_descripcion %}hidden{% endif %}"
+      >
+        &lt;
+      </button>
+      <button
+        class="absolute right-0 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 next-image-btn {% if not obra.imagenes_con_descripcion %}hidden{% endif %}"
+      >
+        &gt;
+      </button>
 
-            <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 image-indicators {% if not obra.imagenes_con_descripcion or (obra.imagenes_con_descripcion.split('; ')|length <= 1) %}hidden{% endif %}">
-            </div>
-        </div>
-
-        <div class="p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ obra.titulo_espanol }}</h2>
-            <p class="text-gray-600 text-sm mb-4">({{ obra.titulo_original }} - {{ obra.anio_publicacion }})</p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Autor(es):</span> {{ obra.autores if obra.autores else 'N/A' }}
-            </p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Género(s):</span> {{ obra.generos if obra.generos else 'N/A' }}
-            </p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Tipo:</span> {{ obra.tipo_obra }}
-            </p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Editorial:</span> {{ obra.editorial_name if obra.editorial_name else 'N/A' }}
-            </p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Páginas:</span> {{ obra.numero_paginas if obra.numero_paginas else 'N/A' }}
-            </p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">ISBN:</span> {{ obra.isbn }}
-            </p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Adquirido:</span> {% if obra.estado_adquisicion == 1 %}Sí{% else %}No{% endif %}
-            </p>
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Encuadernación:</span> {{ obra.nombre_encuadernacion if obra.nombre_encuadernacion else 'N/A' }}
-            </p>
-            {% if obra.ranking_personal_puntuacion %}
-            <p class="text-gray-700 mb-2">
-                <span class="font-semibold">Mi Ranking:</span> {{ obra.ranking_personal_puntuacion }}/10
-                {% if obra.ranking_personal_comentarios %} - "{{ obra.ranking_personal_comentarios }}"{% endif %}
-            </p>
-            {% endif %}
-            <p class="text-gray-800 text-sm mt-4 mb-4 line-clamp-3">
-                <span class="font-semibold">Sinopsis:</span> {{ obra.sinopsis | truncate(150, true) if obra.sinopsis else 'Sin sinopsis disponible.' }}
-            </p>
-
-            <div class="mt-4 flex space-x-2">
-                {% if obra.id_obra is not none %}
-                <a href="{{ url_for('form_libro', id_obra=obra.id_obra) }}" class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-center transition duration-300">Editar</a>
-                <a href="{{ url_for('eliminar_libro', id_obra=obra.id_obra) }}" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-center transition duration-300">Eliminar</a>
-                <button type="button" class="open-rating-modal-btn flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 text-center transition duration-300"
-                        data-book-id="{{ obra.id_obra }}" 
-                        data-book-title="{{ obra.titulo_espanol }}"
-                        data-puntuacion="{{ obra.ranking_personal_puntuacion if obra.ranking_personal_puntuacion is not none else '' }}"
-                        data-comentarios="{{ obra.ranking_personal_comentarios if obra.ranking_personal_comentarios is not none else '' }}"
-                        data-fecha-ranking="{{ obra.ranking_personal_fecha if obra.ranking_personal_fecha is not none else '' }}">
-                    Valorar
-                </button>
-                {% else %}
-                <p style="color: red; font-weight: bold;">Error de datos: ID de obra no disponible para editar/eliminar.</p>
-                {% endif %}
-            </div>
-        </div>
+      <div
+        class="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 image-indicators {% if not obra.imagenes_con_descripcion or (obra.imagenes_con_descripcion.split('; ')|length <= 1) %}hidden{% endif %}"
+      ></div>
     </div>
-    {% endfor %}
+
+    <div class="p-6">
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">
+        {{ obra.titulo_espanol }}
+      </h2>
+      <p class="text-gray-600 text-sm mb-4">
+        ({{ obra.titulo_original }} - {{ obra.anio_publicacion }})
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Autor(es):</span> {{ obra.autores if
+        obra.autores else 'N/A' }}
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Género(s):</span> {{ obra.generos if
+        obra.generos else 'N/A' }}
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Tipo:</span> {{ obra.tipo_obra }}
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Editorial:</span> {{ obra.editorial_nombre
+        if obra.editorial_nombre else 'N/A' }}
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Páginas:</span> {{ obra.numero_paginas if
+        obra.numero_paginas else 'N/A' }}
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">ISBN:</span> {{ obra.isbn }}
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Adquirido:</span> {% if
+        obra.estado_adquisicion == 1 %}Sí{% else %}No{% endif %}
+      </p>
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Encuadernación:</span> {{
+        obra.nombre_encuadernacion if obra.nombre_encuadernacion else 'N/A' }}
+      </p>
+      {% if obra.ranking_personal_puntuacion %}
+      <p class="text-gray-700 mb-2">
+        <span class="font-semibold">Mi Ranking:</span> {{
+        obra.ranking_personal_puntuacion }}/10 {% if
+        obra.ranking_personal_comentarios %} - "{{
+        obra.ranking_personal_comentarios }}"{% endif %}
+      </p>
+      {% endif %}
+      <p class="text-gray-800 text-sm mt-4 mb-4 line-clamp-3">
+        <span class="font-semibold">Sinopsis:</span> {{ obra.sinopsis |
+        truncate(150, true) if obra.sinopsis else 'Sin sinopsis disponible.' }}
+      </p>
+
+      <div class="mt-4 flex space-x-2">
+        {% if obra.id_obra is not none %}
+        <a
+          href="{{ url_for('form_libro', id_obra=obra.id_obra) }}"
+          class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-center transition duration-300"
+          >Editar</a
+        >
+        <a
+          href="{{ url_for('eliminar_libro', id_obra=obra.id_obra) }}"
+          class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-center transition duration-300"
+          >Eliminar</a
+        >
+        <button
+          type="button"
+          class="open-rating-modal-btn flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 text-center transition duration-300"
+          data-book-id="{{ obra.id_obra }}"
+          data-book-title="{{ obra.titulo_espanol }}"
+          data-puntuacion="{{ obra.ranking_personal_puntuacion if obra.ranking_personal_puntuacion is not none else '' }}"
+          data-comentarios="{{ obra.ranking_personal_comentarios if obra.ranking_personal_comentarios is not none else '' }}"
+          data-fecha-ranking="{{ obra.ranking_personal_fecha if obra.ranking_personal_fecha is not none else '' }}"
+        >
+          Valorar
+        </button>
+        {% else %}
+        <p style="color: red; font-weight: bold">
+          Error de datos: ID de obra no disponible para editar/eliminar.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {% else %}
 <p class="text-gray-600 text-center text-lg">No hay obras registradas aún.</p>
 {% endif %}
 
-<a href="{{ url_for('form_libro') }}"
-   class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-110 z-50">
-    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-    </svg>
+<a
+  href="{{ url_for('form_libro') }}"
+  class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-110 z-50"
+>
+  <svg
+    class="w-8 h-8"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M12 4v16m8-8H4"
+    ></path>
+  </svg>
 </a>
 
+<div
+  id="filter-modal"
+  class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden"
+>
+  <div
+    class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl overflow-y-auto max-h-screen-90"
+  >
+    <h2 class="2xl font-bold mb-6">Filtros Avanzados</h2>
+    <form
+      id="advanced-filter-form"
+      action="{{ url_for('index') }}"
+      method="GET"
+    >
+      <input type="hidden" name="filter_applied" value="1" />
 
-<div id="filter-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
-    <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-2xl overflow-y-auto max-h-screen-90">
-        <h2 class="2xl font-bold mb-6">Filtros Avanzados</h2>
-        <form id="advanced-filter-form" action="{{ url_for('index') }}" method="GET">
-            <input type="hidden" name="filter_applied" value="1">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label
+            for="q_title"
+            class="block text-gray-700 text-sm font-bold mb-1"
+            >Título (Original/Español):</label
+          >
+          <input
+            type="text"
+            id="q_title"
+            name="q_title"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+            placeholder="Parte del título"
+          />
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label for="q_title" class="block text-gray-700 text-sm font-bold mb-1">Título (Original/Español):</label>
-                    <input type="text" id="q_title" name="q_title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" placeholder="Parte del título">
-                </div>
+        <div>
+          <label
+            for="id_editorial_filter"
+            class="block text-gray-700 text-sm font-bold mb-1"
+            >Editorial:</label
+          >
+          <select
+            id="id_editorial_filter"
+            name="id_editorial_filter"
+            class="shadow border rounded w-full py-2 px-3 text-gray-700"
+          >
+            <option value="">Todas</option>
+            {# Opciones se cargarán dinámicamente con JavaScript #}
+          </select>
+        </div>
 
-                <div>
-                    <label for="id_editorial_filter" class="block text-gray-700 text-sm font-bold mb-1">Editorial:</label>
-                    <select id="id_editorial_filter" name="id_editorial_filter" class="shadow border rounded w-full py-2 px-3 text-gray-700">
-                        <option value="">Todas</option>
-                        {# Opciones se cargarán dinámicamente con JavaScript #}
-                    </select>
-                </div>
+        <div>
+          <label
+            for="id_tipo_obra_filter"
+            class="block text-gray-700 text-sm font-bold mb-1"
+            >Tipo de Obra:</label
+          >
+          <select
+            id="id_tipo_obra_filter"
+            name="id_tipo_obra_filter"
+            class="shadow border rounded w-full py-2 px-3 text-gray-700"
+          >
+            <option value="">Todos</option>
+            {% for tipo in tipos_obra_list %}
+            <option value="{{ tipo.id_tipo_obra }}">{{ tipo.tipo }}</option>
+            {% endfor %}
+          </select>
+        </div>
 
-                <div>
-                    <label for="id_tipo_obra_filter" class="block text-gray-700 text-sm font-bold mb-1">Tipo de Obra:</label>
-                    <select id="id_tipo_obra_filter" name="id_tipo_obra_filter" class="shadow border rounded w-full py-2 px-3 text-gray-700">
-                        <option value="">Todos</option>
-                        {% for tipo in tipos_obra_list %}
-                            <option value="{{ tipo.id_tipo_obra }}">{{ tipo.tipo }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+        <div>
+          <label
+            for="id_tipo_encuadernacion_filter"
+            class="block text-gray-700 text-sm font-bold mb-1"
+            >Tipo de Encuadernación:</label
+          >
+          <select
+            id="id_tipo_encuadernacion_filter"
+            name="id_tipo_encuadernacion_filter"
+            class="shadow border rounded w-full py-2 px-3 text-gray-700"
+          >
+            <option value="">Todas</option>
+            {% for encuadernacion in tipos_encuadernacion_list %}
+            <option value="{{ encuadernacion.id_tipo_encuadernacion }}">
+              {{ encuadernacion.nombre_encuadernacion }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
 
-                <div>
-                    <label for="id_tipo_encuadernacion_filter" class="block text-gray-700 text-sm font-bold mb-1">Tipo de Encuadernación:</label>
-                    <select id="id_tipo_encuadernacion_filter" name="id_tipo_encuadernacion_filter" class="shadow border rounded w-full py-2 px-3 text-gray-700">
-                        <option value="">Todas</option>
-                        {% for encuadernacion in tipos_encuadernacion_list %}
-                            <option value="{{ encuadernacion.id_tipo_encuadernacion }}">{{ encuadernacion.nombre_encuadernacion }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+        <div>
+          <label class="block text-gray-700 text-sm font-bold mb-1"
+            >Año de Publicación:</label
+          >
+          <div class="flex space-x-2">
+            <input
+              type="number"
+              id="min_anio_publicacion"
+              name="min_anio_publicacion"
+              class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700"
+              placeholder="Desde"
+              min="1000"
+              max="2100"
+            />
+            <input
+              type="number"
+              id="max_anio_publicacion"
+              name="max_anio_publicacion"
+              class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700"
+              placeholder="Hasta"
+              min="1000"
+              max="2100"
+            />
+          </div>
+        </div>
 
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-1">Año de Publicación:</label>
-                    <div class="flex space-x-2">
-                        <input type="number" id="min_anio_publicacion" name="min_anio_publicacion" class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700" placeholder="Desde" min="1000" max="2100">
-                        <input type="number" id="max_anio_publicacion" name="max_anio_publicacion" class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700" placeholder="Hasta" min="1000" max="2100">
-                    </div>
-                </div>
+        <div>
+          <label
+            for="adquirido_filter"
+            class="block text-gray-700 text-sm font-bold mb-1"
+            >Estado de Adquisición:</label
+          >
+          <select
+            id="adquirido_filter"
+            name="adquirido_filter"
+            class="shadow border rounded w-full py-2 px-3 text-gray-700"
+          >
+            <option value="">Todos</option>
+            <option value="1">Adquirido</option>
+            <option value="0">No Adquirido</option>
+          </select>
+        </div>
 
-                <div>
-                    <label for="adquirido_filter" class="block text-gray-700 text-sm font-bold mb-1">Estado de Adquisición:</label>
-                    <select id="adquirido_filter" name="adquirido_filter" class="shadow border rounded w-full py-2 px-3 text-gray-700">
-                        <option value="">Todos</option>
-                        <option value="1">Adquirido</option>
-                        <option value="0">No Adquirido</option>
-                    </select>
-                </div>
+        <div>
+          <label class="block text-gray-700 text-sm font-bold mb-1"
+            >Ranking Personal:</label
+          >
+          <div class="flex space-x-2">
+            <input
+              type="number"
+              id="min_ranking"
+              name="min_ranking"
+              class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700"
+              placeholder="Min (1-10)"
+              min="1"
+              max="10"
+            />
+            <input
+              type="number"
+              id="max_ranking"
+              name="max_ranking"
+              class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700"
+              placeholder="Max (1-10)"
+              min="1"
+              max="10"
+            />
+          </div>
+        </div>
+      </div>
 
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-1">Ranking Personal:</label>
-                    <div class="flex space-x-2">
-                        <input type="number" id="min_ranking" name="min_ranking" class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700" placeholder="Min (1-10)" min="1" max="10">
-                        <input type="number" id="max_ranking" name="max_ranking" class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700" placeholder="Max (1-10)" min="1" max="10">
-                    </div>
-                </div>
-            </div>
+      <hr class="my-6 border-gray-300" />
 
-            <hr class="my-6 border-gray-300">
+      <div class="mb-6">
+        <label
+          for="author-filter-input"
+          class="block text-gray-700 text-sm font-bold mb-1"
+          >Autor(es):</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            id="author-filter-input"
+            placeholder="Escribe el nombre del autor..."
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+          />
+          <div
+            id="author-filter-suggestions"
+            class="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 w-full max-h-48 overflow-y-auto hidden"
+          ></div>
+        </div>
+        <div
+          id="selected-authors-filter-tags"
+          class="mt-2 flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[40px]"
+        ></div>
+        <input type="hidden" name="author_ids_filter" id="author-ids-filter" />
+      </div>
 
-            <div class="mb-6">
-                <label for="author-filter-input" class="block text-gray-700 text-sm font-bold mb-1">Autor(es):</label>
-                <div class="relative">
-                    <input type="text" id="author-filter-input" placeholder="Escribe el nombre del autor..." class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700">
-                    <div id="author-filter-suggestions" class="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 w-full max-h-48 overflow-y-auto hidden"></div>
-                </div>
-                <div id="selected-authors-filter-tags" class="mt-2 flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[40px]"></div>
-                <input type="hidden" name="author_ids_filter" id="author-ids-filter">
-            </div>
+      <div class="mb-6">
+        <label
+          for="genre-filter-input"
+          class="block text-gray-700 text-sm font-bold mb-1"
+          >Género(s):</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            id="genre-filter-input"
+            placeholder="Escribe el nombre del género..."
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
+          />
+          <div
+            id="genre-filter-suggestions"
+            class="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 w-full max-h-48 overflow-y-auto hidden"
+          ></div>
+        </div>
+        <div
+          id="selected-genres-filter-tags"
+          class="mt-2 flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[40px]"
+        ></div>
+        <input type="hidden" name="genre_ids_filter" id="genre-ids-filter" />
+      </div>
 
-            <div class="mb-6">
-                <label for="genre-filter-input" class="block text-gray-700 text-sm font-bold mb-1">Género(s):</label>
-                <div class="relative">
-                    <input type="text" id="genre-filter-input" placeholder="Escribe el nombre del género..." class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700">
-                    <div id="genre-filter-suggestions" class="absolute z-10 bg-white border border-gray-300 rounded shadow-lg mt-1 w-full max-h-48 overflow-y-auto hidden"></div>
-                </div>
-                <div id="selected-genres-filter-tags" class="mt-2 flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[40px]"></div>
-                <input type="hidden" name="genre_ids_filter" id="genre-ids-filter">
-            </div>
-
-
-            <div class="flex justify-end space-x-4 mt-6">
-                <button type="button" id="clear-filters-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400">Limpiar Filtros</button>
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Aplicar Filtros</button>
-            </div>
-        </form>
-        <button type="button" id="close-filter-modal-btn" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold">&times;</button>
-    </div>
+      <div class="flex justify-end space-x-4 mt-6">
+        <button
+          type="button"
+          id="clear-filters-btn"
+          class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400"
+        >
+          Limpiar Filtros
+        </button>
+        <button
+          type="submit"
+          class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        >
+          Aplicar Filtros
+        </button>
+      </div>
+    </form>
+    <button
+      type="button"
+      id="close-filter-modal-btn"
+      class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold"
+    >
+      &times;
+    </button>
+  </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
@@ -249,10 +458,10 @@
 
 {# Inyectar datos iniciales para JavaScript #}
 <script>
-    const allTiposObra = {{ tipos_obra_list | tojson | safe }};
-    const allTiposEncuadernacion = {{ tipos_encuadernacion_list | tojson | safe }};
-    // Esta variable global currentFilters será inicializada por index_filters.js
-    // con new URLSearchParams(window.location.search);
+      const allTiposObra = {{ tipos_obra_list | tojson | safe }};
+      const allTiposEncuadernacion = {{ tipos_encuadernacion_list | tojson | safe }};
+      // Esta variable global currentFilters será inicializada por index_filters.js
+      // con new URLSearchParams(window.location.search);
 </script>
 
 {% endblock %}

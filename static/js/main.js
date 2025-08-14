@@ -152,5 +152,4 @@ document.addEventListener('DOMContentLoaded', () => {
             closeSinopsisModal();
         }
     });
-    // --- FIN NUEVA LÓGICA ---
 });

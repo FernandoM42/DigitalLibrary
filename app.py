@@ -69,7 +69,7 @@ def index():
         # --- Obtener todos los parámetros de filtro de la URL ---
         main_search_query = request.args.get("q", "").strip()
         q_title = request.args.get("q_title", "").strip()
-        q_editorial = request.args.get("q_editorial", "").strip()
+        q_editorial = request.args.get("id_editorial_filter", "").strip()
         id_tipo_obra_filter = request.args.get("id_tipo_obra_filter", "").strip()
         id_tipo_encuadernacion_filter = request.args.get(
             "id_tipo_encuadernacion_filter", ""
