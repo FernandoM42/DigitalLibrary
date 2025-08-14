@@ -1,5 +1,4 @@
 # app.py
-from asyncio.windows_events import NULL
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import mysql.connector
 import json
@@ -1125,19 +1124,19 @@ def eliminar_libro(id_obra):
                 (
                     3,  # ev = 3 (Eliminar)
                     id_obra,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
-                    NULL,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
                 ),
             )
             # *** FIN MODIFICACIÓN ***
