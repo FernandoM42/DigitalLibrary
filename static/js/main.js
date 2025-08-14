@@ -9,9 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     bookCards.forEach((card, cardIndex) => {
-        console.log(`--- main.js: Procesando tarjeta #${cardIndex} ---`);
-        const rawImagesString = card.dataset.imagesRaw;
-        console.log(`rawImagesString para tarjeta #<span class="math-inline">\{cardIndex\}\: "</span>{rawImagesString}"`);
+        // console.log(`--- main.js: Procesando tarjeta #${cardIndex} ---`);
+        // const rawImagesString = card.dataset.imagesRaw;
+        // console.log(`rawImagesString para tarjeta #<span class="math-inline">\{cardIndex\}\: "</span>{rawImagesString}"`);
 
         let images = [];
 
@@ -106,10 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const sinopsisModalCloseBtn = document.getElementById('sinopsis-modal-close-btn');
 
     // *** AÑADIR ESTAS LÍNEAS DE DEPURACIÓN (VERIFICAR REFERENCIAS DOM) ***
-    console.log("DEBUG MAIN.JS: sinopsisModal element:", sinopsisModal);
-    console.log("DEBUG MAIN.JS: sinopsisModalTitle element:", sinopsisModalTitle);
-    console.log("DEBUG MAIN.JS: fullSinopsisText element:", fullSinopsisText);
-    console.log("DEBUG MAIN.JS: sinopsisModalCloseBtn element:", sinopsisModalCloseBtn);
+    // console.log("DEBUG MAIN.JS: sinopsisModal element:", sinopsisModal);
+    // console.log("DEBUG MAIN.JS: sinopsisModalTitle element:", sinopsisModalTitle);
+    // console.log("DEBUG MAIN.JS: fullSinopsisText element:", fullSinopsisText);
+    // console.log("DEBUG MAIN.JS: sinopsisModalCloseBtn element:", sinopsisModalCloseBtn);
     // ***************************************************
 
     /**
