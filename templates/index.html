@@ -164,7 +164,7 @@ content %}
       </p>
 
       <div class="mt-4 flex space-x-2">
-        {% if obra.id_obra is not none %}
+        {% if session.get('usuario') %} {% if obra.id_obra is not none %}
         <a
           href="{{ url_for('form_libro', id_obra=obra.id_obra) }}"
           class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-center transition duration-300"
@@ -190,7 +190,7 @@ content %}
         <p style="color: red; font-weight: bold">
           Error de datos: ID de obra no disponible para editar/eliminar.
         </p>
-        {% endif %}
+        {% endif %} {% endif %}
       </div>
     </div>
   </div>
@@ -456,7 +456,6 @@ content %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script src="{{ url_for('static', filename='js/index_filters.js') }}"></script>
 
-{# Inyectar datos iniciales para JavaScript #}
 <script>
       const allTiposObra = {{ tipos_obra_list | tojson | safe }};
       const allTiposEncuadernacion = {{ tipos_encuadernacion_list | tojson | safe }};

@@ -1,8 +1,20 @@
 # app.py
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    jsonify,
+    session,
+)
 import mysql.connector
 import json
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+
 from werkzeug.utils import secure_filename
 from config import Config
 
@@ -11,7 +23,6 @@ app.config.from_object(Config)
 app.config["TEMPLATES_AUTO_RELOAD"] = (
     True  # Permite que los cambios en plantillas se recarguen automáticamente
 )
-
 
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
@@ -37,6 +48,56 @@ def get_db_connection():
     except mysql.connector.Error as err:
         flash(f"Error al conectar con la base de datos: {err}", "danger")
         return None
+
+
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if "usuario" not in session:
+            # guarda a dónde quería ir para redirigir después
+            return redirect(url_for("login", next=request.path))
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+
+        conn = get_db_connection()
+        if not conn:
+            flash("No hay conexión a la base de datos", "danger")
+            return render_template("login.html")
+
+        cur = conn.cursor(dictionary=True)
+        cur.execute(
+            "SELECT idusuario, username, password FROM usuario WHERE username=%s",
+            (username,),
+        )
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        if user and check_password_hash(user["password"], password):
+            session["usuario"] = {"id": user["idusuario"], "username": user["username"]}
+            flash(f"Bienvenido(a), {user['username']}!", "success")
+            destino = request.args.get("next") or url_for("index")
+            return redirect(destino)
+        else:
+            flash("Usuario o contraseña incorrectos", "danger")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    session.pop("usuario", None)
+    flash("Sesión cerrada", "info")
+    return redirect(url_for("login"))
 
 
 @app.route("/")
@@ -485,6 +546,7 @@ def check_series_name_exists():
 
 # Modificación en la ruta POST de new_series para validar unicidad
 @app.route("/series/new", methods=["GET", "POST"])
+@login_required
 def new_series():
     conn = get_db_connection()
     if conn is None:
@@ -611,6 +673,7 @@ def new_series():
 
 # Depuración para el Problema 2
 @app.route("/series/<int:series_id>/edit", methods=["GET", "POST"])
+@login_required
 def edit_series(series_id):
     conn = get_db_connection()
     if conn is None:
@@ -746,6 +809,7 @@ def edit_series(series_id):
 
 @app.route("/libro/form", defaults={"id_obra": None}, methods=["GET", "POST"])
 @app.route("/libro/form/<id_obra>", methods=["GET", "POST"])
+@login_required
 def form_libro(id_obra):
     conn = get_db_connection()
     if conn is None:
@@ -1100,6 +1164,7 @@ def form_libro(id_obra):
 
 
 @app.route("/libro/eliminar/<int:id_obra>", methods=["GET", "POST"])
+@login_required
 def eliminar_libro(id_obra):
     conn = get_db_connection()
     if conn is None:
@@ -1176,6 +1241,7 @@ def eliminar_libro(id_obra):
 
 # --- NUEVA RUTA: Página de listado de series ---
 @app.route("/series")
+@login_required
 def list_series():
     conn = get_db_connection()
     if conn is None:
@@ -1236,6 +1302,7 @@ def list_series():
 
 # --- NUEVA RUTA para eliminar series ---
 @app.route("/series/delete/<int:series_id>", methods=["GET", "POST"])
+@login_required
 def delete_series(series_id):
     conn = get_db_connection()
     if conn is None:
@@ -1313,6 +1380,7 @@ def delete_series(series_id):
 
 
 @app.route("/admin")
+@login_required
 def admin_dashboard():
     # No necesita datos específicos de DB para esta página inicial
     return render_template("admin_dashboard.html")
@@ -1381,6 +1449,7 @@ MASTER_DATA_CONFIG = {
 
 
 @app.route("/admin/<string:data_type>")
+@login_required
 def list_master_data(data_type):
     conn = get_db_connection()
     if conn is None:
@@ -1487,6 +1556,7 @@ MASTER_DATA_FORM_FIELDS = {
 
 
 @app.route("/admin/<string:data_type>/new", methods=["GET", "POST"])
+@login_required
 def create_master_data(data_type):
     # Llama a la lógica principal de manage_master_data con item_id=None
     return manage_master_data_logic(data_type, item_id=None)
@@ -1665,6 +1735,7 @@ def manage_master_data_logic(
 
 
 @app.route("/admin/<string:data_type>/<int:item_id>/delete", methods=["POST"])
+@login_required
 def delete_master_data(data_type, item_id):
     conn = get_db_connection()
     if conn is None:
@@ -1811,6 +1882,7 @@ def delete_master_data(data_type, item_id):
 
 # --- MODIFICACIÓN: Endpoint API para Valorar un libro ---
 @app.route("/api/rate_book", methods=["POST"])
+@login_required
 def rate_book():
     conn = get_db_connection()
     if conn is None:
@@ -1927,6 +1999,7 @@ def rate_book():
 
 # --- NUEVO ENDPOINT API: Eliminar valoración de un libro ---
 @app.route("/api/delete_rating/<int:id_obra>", methods=["POST"])
+@login_required
 def delete_rating(id_obra):
     conn = get_db_connection()
     if conn is None:
@@ -1986,6 +2059,7 @@ def delete_rating(id_obra):
 
 # --- NUEVA RUTA: Ver detalles de una serie y sus libros ---
 @app.route("/series/<int:series_id>")
+@login_required
 def view_series_detail(series_id):
     conn = get_db_connection()
     if conn is None:
@@ -2103,6 +2177,7 @@ def view_series_detail(series_id):
 
 
 @app.route("/dashboard")
+@login_required
 def dashboard():
     conn = get_db_connection()
     if conn is None:
@@ -2368,6 +2443,7 @@ def get_books_by_filter():
 
 # --- NUEVA RUTA: Visualización del Ranking de Libros ---
 @app.route("/ranking")
+@login_required
 def ranking():
     conn = get_db_connection()
     if conn is None:
