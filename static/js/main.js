@@ -153,3 +153,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+          // Truncar sinopsis y mostrar botón "Ver más" si es necesario
+          document.querySelectorAll(".sinopsis-text").forEach(function (span) {
+            const full = span.getAttribute("data-full");
+            const maxLen = 150;
+            if (full.length > maxLen) {
+              span.textContent = full.substring(0, maxLen) + "...";
+              span.nextElementSibling.style.display = "inline";
+            } else {
+              span.textContent = full;
+            }
+          });
+
+          // Modal lógica
+          const modal = document.getElementById("sinopsis-modal");
+          const modalContent = document.getElementById(
+            "sinopsis-modal-content"
+          );
+          const modalTitle = document.getElementById("sinopsis-modal-title");
+          const closeBtn = document.getElementById("close-sinopsis-modal-btn");
+
+          document.querySelectorAll(".ver-mas-sinopsis-btn").forEach((btn) => {
+            btn.addEventListener("click", function () {
+              modalContent.textContent = btn.getAttribute("data-full-sinopsis");
+              modalTitle.textContent = btn.getAttribute("data-obra-titulo");
+              modal.classList.remove("hidden");
+            });
+          });
+
+          closeBtn.addEventListener("click", function () {
+            modal.classList.add("hidden");
+          });
+
+          modal.addEventListener("click", function (e) {
+            if (e.target === modal) {
+              modal.classList.add("hidden");
+            }
+          });
+        });

@@ -158,10 +158,48 @@ content %}
         obra.ranking_personal_comentarios }}"{% endif %}
       </p>
       {% endif %}
-      <p class="text-gray-800 text-sm mt-4 mb-4 line-clamp-3">
-        <span class="font-semibold">Sinopsis:</span> {{ obra.sinopsis |
-        truncate(150, true) if obra.sinopsis else 'Sin sinopsis disponible.' }}
+      <p class="text-gray-800 text-sm mt-4 mb-4">
+        <span class="font-semibold">Sinopsis:</span>
+        {% if obra.sinopsis %}
+        <span
+          class="sinopsis-text"
+          data-full="{{ obra.sinopsis | escape }}"
+        ></span>
+        <button
+          type="button"
+          class="text-blue-600 hover:underline ml-2 ver-mas-sinopsis-btn"
+          style="display: none"
+          data-full-sinopsis="{{ obra.sinopsis | escape }}"
+          data-obra-titulo="{{ obra.titulo_espanol }}"
+        >
+          Ver más
+        </button>
+        {% else %} Sin sinopsis disponible. {% endif %}
       </p>
+
+      <div
+        id="sinopsis-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden"
+      >
+        <div
+          class="bg-white p-8 rounded-lg shadow-xl w-11/12 max-w-xl relative"
+          style="max-height: 80vh"
+        >
+          <h2 id="sinopsis-modal-title" class="text-xl font-bold mb-4"></h2>
+          <div
+            id="sinopsis-modal-content"
+            class="text-gray-800 text-base"
+            style="max-height: 60vh; overflow-y: auto"
+          ></div>
+          <button
+            type="button"
+            id="close-sinopsis-modal-btn"
+            class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
 
       <div class="mt-4 flex space-x-2">
         {% if session.get('usuario') %} {% if obra.id_obra is not none %}
