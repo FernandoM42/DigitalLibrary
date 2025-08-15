@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     bookCards.forEach((card, cardIndex) => {
         // console.log(`--- main.js: Procesando tarjeta #${cardIndex} ---`);
-        // const rawImagesString = card.dataset.imagesRaw;
+        const rawImagesString = card.dataset.imagesRaw;
         // console.log(`rawImagesString para tarjeta #<span class="math-inline">\{cardIndex\}\: "</span>{rawImagesString}"`);
 
         let images = [];
