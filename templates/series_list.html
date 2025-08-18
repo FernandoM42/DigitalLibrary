@@ -1,67 +1,125 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block title %}Lista de Series{% endblock %} {%
+block content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-6">
+  Mis Series/Sagas de Libros
+</h1>
 
-{% block title %}Lista de Series{% endblock %}
-
-{% block content %}
-<h1 class="text-3xl font-bold text-gray-800 mb-6">Mis Series/Sagas de Libros</h1>
-
-<form action="{{ url_for('list_series') }}" method="GET" class="mb-8 p-4 bg-white shadow-md rounded-lg flex items-center space-x-4">
-    <input type="text" name="q" placeholder="Buscar serie por nombre o descripción..." value="{{ search_query if search_query else '' }}"
-           class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300">Buscar</button>
-    {% if search_query %}
-    <a href="{{ url_for('list_series') }}" class="text-gray-500 hover:text-gray-700">Limpiar</a>
-    {% endif %}
+<form
+  action="{{ url_for('list_series') }}"
+  method="GET"
+  class="mb-8 p-4 bg-white shadow-md rounded-lg flex items-center space-x-4"
+>
+  <input
+    type="text"
+    name="q"
+    placeholder="Buscar serie por nombre o descripción..."
+    value="{{ search_query if search_query else '' }}"
+    class="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  <button
+    type="submit"
+    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300"
+  >
+    Buscar
+  </button>
+  {% if search_query %}
+  <a
+    href="{{ url_for('list_series') }}"
+    class="text-gray-500 hover:text-gray-700"
+    >Limpiar</a
+  >
+  {% endif %}
 </form>
 
 {% if series_list %}
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for series in series_list %}
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
-        <div class="p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ series.nombre_serie }}</h2>
-            <p class="text-gray-700 mb-4">
-                {{ series.descripcion_serie if series.descripcion_serie else 'Sin descripción.' }}
-            </p>
-
-            <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">Libros en esta serie:</h3>
-            <div class="max-h-40 overflow-y-auto border border-gray-200 rounded p-2 text-sm">
-                {% if series.books %}
-                    <ul class="list-disc list-inside text-gray-700">
-                        {% for book in series.books %}
-                            <li>
-                                ({{ book.orden_en_serie }}) 
-                                <a href="{{ url_for('form_libro', id_obra=book.id_obra) }}" class="text-blue-600 hover:underline">
-                                    {{ book.titulo_espanol }} <span class="text-gray-500">({{ book.titulo_original }})</span>
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-gray-500">Esta serie aún no tiene libros asignados.</p>
-                {% endif %}
-            </div>
-            
-            <div class="mt-4 flex space-x-2">
-                <a href="{{ url_for('view_series_detail', series_id=series.id_serie) }}" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-center transition duration-300">Detalles</a>
-
-                <a href="{{ url_for('edit_series', series_id=series.id_serie) }}" class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-center transition duration-300">Editar</a>
-
-                <a href="{{ url_for('delete_series', series_id=series.id_serie) }}" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-center transition duration-300">Eliminar</a>
-            </div>
+  {% for series in series_list %}
+  <div
+    class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200"
+  >
+    <div class="p-6">
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">
+        {{ series.nombre_serie }}
+      </h2>
+      <div class="mb-4">
+        <div class="overflow-y-auto h-[15rem]" style="height: 15rem">
+          <p class="text-gray-700 break-words">
+            {{ series.descripcion_serie if series.descripcion_serie else 'Sin
+            descripción.' }}
+          </p>
         </div>
-        
+      </div>
+
+      <h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">
+        Libros en esta serie:
+      </h3>
+      <div
+        class="max-h-40 overflow-y-auto border border-gray-200 rounded p-2 text-sm"
+      >
+        {% if series.books %}
+        <ul class="list-disc list-inside text-gray-700">
+          {% for book in series.books %}
+          <li>
+            ({{ book.orden_en_serie }})
+            <a
+              href="{{ url_for('form_libro', id_obra=book.id_obra) }}"
+              class="text-blue-600 hover:underline"
+            >
+              {{ book.titulo_espanol }}
+              <span class="text-gray-500">({{ book.titulo_original }})</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-gray-500">Esta serie aún no tiene libros asignados.</p>
+        {% endif %}
+      </div>
+
+      <div class="mt-4 flex space-x-2">
+        <a
+          href="{{ url_for('view_series_detail', series_id=series.id_serie) }}"
+          class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-center transition duration-300"
+          >Detalles</a
+        >
+
+        <a
+          href="{{ url_for('edit_series', series_id=series.id_serie) }}"
+          class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-center transition duration-300"
+          >Editar</a
+        >
+
+        <a
+          href="{{ url_for('delete_series', series_id=series.id_serie) }}"
+          class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-center transition duration-300"
+          >Eliminar</a
+        >
+      </div>
     </div>
-    {% endfor %}
+  </div>
+  {% endfor %}
 </div>
 {% else %}
 <p class="text-gray-600 text-center text-lg">No hay series registradas aún.</p>
 {% endif %}
 
-<a href="{{ url_for('new_series') }}"
-   class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-110 z-50">
-    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-    </svg>
+<a
+  href="{{ url_for('new_series') }}"
+  class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-110 z-50"
+>
+  <svg
+    class="w-8 h-8"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M12 4v16m8-8H4"
+    ></path>
+  </svg>
 </a>
 {% endblock %}
